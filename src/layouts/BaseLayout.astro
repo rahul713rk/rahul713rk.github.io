@@ -4,10 +4,14 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  image?: string;
+  type?: 'website' | 'article';
 }
 
-const { title, description = 'Portfolio and writing' } = Astro.props;
+const { title, description = 'Portfolio and writing', image, type = 'website' } = Astro.props;
 const base = import.meta.env.BASE_URL;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
 ---
 
 <!doctype html>
@@ -17,19 +21,70 @@ const base = import.meta.env.BASE_URL;
     <meta name="viewport" content="width=device-width" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.toString()} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical.toString()} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    <link rel="alternate" type="application/rss+xml" title="Portfolio RSS" href={`${base}rss.xml`} />
   </head>
   <body>
     <header class="site-header">
       <nav class="container nav">
-        <a href={base}>Home</a>
+        <a href={`${base}#home`}>Home</a>
         <a href={`${base}#projects`}>Projects</a>
         <a href={`${base}#writing`}>Blog + Guides</a>
         <a href={`${base}about/`}>About</a>
         <a href={`${base}skills/`}>Skills</a>
+        <a href={`${base}rss.xml`}>RSS</a>
+        <label class="theme-switch" for="theme-select">Mode</label>
+        <select id="theme-select" aria-label="Choose theme mode">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="rainbow">Rainbow</option>
+          <option value="computer-science">Computer Science</option>
+          <option value="neural-network">Neural Network</option>
+        </select>
       </nav>
     </header>
     <main class="container">
       <slot />
     </main>
+    <script is:inline>
+      const key = 'theme-mode';
+      const root = document.documentElement;
+      const select = document.getElementById('theme-select');
+      const saved = localStorage.getItem(key) || 'light';
+      root.dataset.theme = saved;
+      if (select) {
+        select.value = saved;
+        select.addEventListener('change', (event) => {
+          const mode = event.target.value;
+          root.dataset.theme = mode;
+          localStorage.setItem(key, mode);
+        });
+      }
+    </script>
+    <script type="module" is:inline>
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      const blocks = document.querySelectorAll('pre code.language-mermaid');
+      if (blocks.length > 0) {
+        mermaid.initialize({ startOnLoad: false, securityLevel: 'loose', theme: 'neutral' });
+        blocks.forEach((block, index) => {
+          const pre = block.closest('pre');
+          if (!pre) return;
+          const container = document.createElement('div');
+          container.className = 'mermaid';
+          container.textContent = block.textContent || '';
+          pre.replaceWith(container);
+        });
+        await mermaid.run({ querySelector: '.mermaid' });
+      }
+    </script>
   </body>
 </html>

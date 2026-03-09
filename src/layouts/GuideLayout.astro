@@ -21,7 +21,7 @@ const { title, description, guide, order, tags = [], readingTime, headings = [] 
 const base = import.meta.env.BASE_URL;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} type="article">
   <article class="content-grid">
     <div>
       <p class="eyebrow">Guide: {guide} / Step {order}</p>

@@ -10,39 +10,172 @@ const [posts, projects, guides] = await Promise.all([
   getCollection('guides', ({ data }) => !data.draft)
 ]);
 
-const latestPosts = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 3);
-const featuredProjects = projects.filter((p) => p.data.featured).slice(0, 3);
+const latestPosts = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 6);
+const orderedProjects = projects.sort((a, b) => Number(b.data.featured) - Number(a.data.featured));
 const guidePages = guides.sort((a, b) => a.data.guide.localeCompare(b.data.guide) || a.data.order - b.data.order);
+const allTags = [...new Set([
+  ...orderedProjects.flatMap((project) => project.data.tags),
+  ...latestPosts.flatMap((post) => post.data.tags),
+  ...guidePages.flatMap((page) => page.data.tags)
+])].sort((a, b) => a.localeCompare(b));
+
+const searchEntries = [
+  ...orderedProjects.map((project) => ({
+    kind: 'Project',
+    title: project.data.title,
+    description: project.data.description || '',
+    tags: project.data.tags,
+    href: `${base}portfolio/${project.slug}/`
+  })),
+  ...latestPosts.map((post) => ({
+    kind: 'Blog',
+    title: post.data.title,
+    description: post.data.description || '',
+    tags: post.data.tags,
+    href: `${base}blog/${post.slug}/`
+  })),
+  ...guidePages.map((guide) => ({
+    kind: 'Guide',
+    title: `${guide.data.guide}: ${guide.data.title}`,
+    description: guide.data.description || '',
+    tags: guide.data.tags,
+    href: `${base}guides/${guide.slug}/`
+  }))
+];
 ---
 
-<BaseLayout title="Portfolio" description="Developer portfolio and writing">
-  <section id="home">
-    <h1>Hi, I build fast and maintainable web products.</h1>
-    <p>This site is built with Astro + Markdown collections.</p>
+<BaseLayout title="Portfolio" description="Developer portfolio, projects, blog posts and guides.">
+  <section id="home" class="hero gradient-border">
+    <p class="eyebrow">Software Engineer</p>
+    <h1>Build fast. Keep it maintainable.</h1>
+    <p>I design and ship production-ready web systems focused on performance, clarity, and long-term maintainability.</p>
   </section>
 
-  <section id="projects">
+  <section id="showcase" class="panel">
+    <h2>Project Showcase</h2>
+    <div class="card-grid">
+      {orderedProjects.slice(0, 3).map((project) => (
+        <article class="card" data-tags={project.data.tags.map((tag) => tag.toLowerCase()).join(',')}>
+          <p class="eyebrow">{project.data.featured ? 'Featured Project' : 'Project'}</p>
+          <h3><a href={`${base}portfolio/${project.slug}/`}>{project.data.title}</a></h3>
+          <p>{project.data.description}</p>
+          <p class="tags">
+            {project.data.tags.map((tag) => <a href={`${base}tags/${tag.toLowerCase()}/`}>#{tag}</a>)}
+          </p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section id="search" class="panel">
+    <h2>Search</h2>
+    <input id="site-search" type="search" placeholder="Search projects, blog, guides..." autocomplete="off" />
+    <div id="search-results" class="list"></div>
+  </section>
+
+  <section id="filters" class="panel">
+    <h2>Tag Filtering</h2>
+    <div class="chips">
+      <button class="chip active" type="button" data-filter="all">All</button>
+      {allTags.map((tag) => (
+        <button class="chip" type="button" data-filter={tag.toLowerCase()}>{tag}</button>
+      ))}
+    </div>
+  </section>
+
+  <section id="projects" class="panel">
     <h2>Projects</h2>
-    <ul>
-      {featuredProjects.map((project) => (
-        <li><a href={`${base}portfolio/${project.slug}/`}>{project.data.title}</a></li>
+    <div class="list" data-filter-group="projects">
+      {orderedProjects.map((project) => (
+        <article class="card filter-item" data-tags={project.data.tags.map((tag) => tag.toLowerCase()).join(',')}>
+          <h3><a href={`${base}portfolio/${project.slug}/`}>{project.data.title}</a></h3>
+          <p>{project.data.description}</p>
+          <p class="meta">Stack: {project.data.stack.join(', ')}</p>
+          <p class="tags">
+            {project.data.tags.map((tag) => <a href={`${base}tags/${tag.toLowerCase()}/`}>#{tag}</a>)}
+          </p>
+        </article>
       ))}
-    </ul>
+    </div>
   </section>
 
-  <section id="writing">
+  <section id="writing" class="panel">
     <h2>Blog</h2>
-    <ul>
+    <div class="list" data-filter-group="blog">
       {latestPosts.map((post) => (
-        <li><a href={`${base}blog/${post.slug}/`}>{post.data.title}</a></li>
+        <article class="card filter-item" data-tags={post.data.tags.map((tag) => tag.toLowerCase()).join(',')}>
+          <h3><a href={`${base}blog/${post.slug}/`}>{post.data.title}</a></h3>
+          <p>{post.data.description}</p>
+          <p class="meta">{post.data.date.toLocaleDateString()}</p>
+          <p class="tags">
+            {post.data.tags.map((tag) => <a href={`${base}tags/${tag.toLowerCase()}/`}>#{tag}</a>)}
+          </p>
+        </article>
       ))}
-    </ul>
+    </div>
 
     <h2>Guides</h2>
-    <ul>
+    <div class="list" data-filter-group="guides">
       {guidePages.map((page) => (
-        <li><a href={`${base}guides/${page.slug}/`}>{page.data.guide}: {page.data.title}</a></li>
+        <article class="card filter-item" data-tags={page.data.tags.map((tag) => tag.toLowerCase()).join(',')}>
+          <h3><a href={`${base}guides/${page.slug}/`}>{page.data.guide}: {page.data.title}</a></h3>
+          <p>{page.data.description}</p>
+          <p class="meta">Step {page.data.order}</p>
+          <p class="tags">
+            {page.data.tags.map((tag) => <a href={`${base}tags/${tag.toLowerCase()}/`}>#{tag}</a>)}
+          </p>
+        </article>
       ))}
-    </ul>
+    </div>
   </section>
+
+  <script is:inline>
+    const entries = JSON.parse(document.getElementById('search-data')?.textContent || '[]');
+    const input = document.getElementById('site-search');
+    const results = document.getElementById('search-results');
+
+    function renderResults(query) {
+      if (!results) return;
+      if (!query) {
+        results.innerHTML = '';
+        return;
+      }
+      const q = query.toLowerCase();
+      const matches = entries.filter((entry) =>
+        [entry.title, entry.description, entry.kind, ...(entry.tags || [])]
+          .join(' ')
+          .toLowerCase()
+          .includes(q)
+      ).slice(0, 8);
+
+      if (matches.length === 0) {
+        results.innerHTML = '<p class="meta">No matches.</p>';
+        return;
+      }
+
+      results.innerHTML = matches
+        .map((item) => `\n          <article class="card">\n            <p class="eyebrow">${item.kind}</p>\n            <h3><a href="${item.href}">${item.title}</a></h3>\n            <p>${item.description || ''}</p>\n          </article>\n        `)
+        .join('');
+    }
+
+    input?.addEventListener('input', (event) => {
+      renderResults(event.target.value);
+    });
+
+    const chips = Array.from(document.querySelectorAll('.chip'));
+    const filterItems = Array.from(document.querySelectorAll('.filter-item'));
+
+    function applyFilter(tag) {
+      filterItems.forEach((item) => {
+        const tags = (item.dataset.tags || '').split(',').filter(Boolean);
+        item.style.display = tag === 'all' || tags.includes(tag) ? '' : 'none';
+      });
+      chips.forEach((chip) => chip.classList.toggle('active', chip.dataset.filter === tag));
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => applyFilter(chip.dataset.filter || 'all'));
+    });
+  </script>
+  <script id="search-data" type="application/json" set:html={JSON.stringify(searchEntries)}></script>
 </BaseLayout>

@@ -7,16 +7,53 @@ const base = import.meta.env.BASE_URL;
 const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))].sort((a, b) => a.localeCompare(b));
 ---
 
 <BaseLayout title="Blog" description="Technical posts">
   <h1>Technical Blog</h1>
-  <ul>
-    {posts.map((post) => (
-      <li>
-        <a href={`${base}blog/${post.slug}/`}>{post.data.title}</a>
-        <p class="meta">{post.data.date.toLocaleDateString()}</p>
-      </li>
+  <input id="blog-search" type="search" placeholder="Search blog posts..." autocomplete="off" />
+  <div class="chips">
+    <button class="chip active" type="button" data-filter="all">All</button>
+    {tags.map((tag) => (
+      <button class="chip" type="button" data-filter={tag.toLowerCase()}>{tag}</button>
     ))}
-  </ul>
+  </div>
+  <div class="list" id="blog-list">
+    {posts.map((post) => (
+      <article class="card filter-item" data-tags={post.data.tags.map((tag) => tag.toLowerCase()).join(',')} data-search={`${post.data.title} ${post.data.description || ''} ${post.data.tags.join(' ')}`}>
+        <h2><a href={`${base}blog/${post.slug}/`}>{post.data.title}</a></h2>
+        <p>{post.data.description}</p>
+        <p class="meta">{post.data.date.toLocaleDateString()}</p>
+      </article>
+    ))}
+  </div>
+
+  <script is:inline>
+    const search = document.getElementById('blog-search');
+    const chips = Array.from(document.querySelectorAll('.chip'));
+    const items = Array.from(document.querySelectorAll('.filter-item'));
+    let activeTag = 'all';
+
+    function render() {
+      const query = (search?.value || '').toLowerCase();
+      items.forEach((item) => {
+        const text = (item.dataset.search || '').toLowerCase();
+        const tags = (item.dataset.tags || '').split(',').filter(Boolean);
+        const tagMatch = activeTag === 'all' || tags.includes(activeTag);
+        const searchMatch = !query || text.includes(query);
+        item.style.display = tagMatch && searchMatch ? '' : 'none';
+      });
+    }
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        activeTag = chip.dataset.filter || 'all';
+        chips.forEach((c) => c.classList.toggle('active', c === chip));
+        render();
+      });
+    });
+
+    search?.addEventListener('input', render);
+  </script>
 </BaseLayout>
