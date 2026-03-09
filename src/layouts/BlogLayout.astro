@@ -17,6 +17,7 @@ interface Props {
 }
 
 const { title, description, date, tags = [], readingTime, headings = [] } = Astro.props;
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -29,7 +30,7 @@ const { title, description, date, tags = [], readingTime, headings = [] } = Astr
         {readingTime && <span>{readingTime} min read</span>}
       </p>
       <p class="tags">
-        {tags.map((tag) => <a href={`/tags/${tag.toLowerCase()}/`}>#{tag}</a>)}
+        {tags.map((tag) => <a href={`${base}tags/${tag.toLowerCase()}/`}>#{tag}</a>)}
       </p>
       <slot />
     </div>

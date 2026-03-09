@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="Skill" description="Technical skills">
+  <section>
+    <h1>Skill</h1>
+    <p>This page moved to <a href={`${base}skills/`}>Skills</a>.</p>
+  </section>
+</BaseLayout>

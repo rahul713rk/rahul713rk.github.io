@@ -12,17 +12,17 @@ const [posts, projects, guides] = await Promise.all([
 
 const latestPosts = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 3);
 const featuredProjects = projects.filter((p) => p.data.featured).slice(0, 3);
-const guideSeries = [...new Set(guides.map((g) => g.data.guide))];
+const guidePages = guides.sort((a, b) => a.data.guide.localeCompare(b.data.guide) || a.data.order - b.data.order);
 ---
 
 <BaseLayout title="Portfolio" description="Developer portfolio and writing">
-  <section>
+  <section id="home">
     <h1>Hi, I build fast and maintainable web products.</h1>
     <p>This site is built with Astro + Markdown collections.</p>
   </section>
 
-  <section>
-    <h2>Featured Projects</h2>
+  <section id="projects">
+    <h2>Projects</h2>
     <ul>
       {featuredProjects.map((project) => (
         <li><a href={`${base}portfolio/${project.slug}/`}>{project.data.title}</a></li>
@@ -30,20 +30,18 @@ const guideSeries = [...new Set(guides.map((g) => g.data.guide))];
     </ul>
   </section>
 
-  <section>
-    <h2>Latest Blog Posts</h2>
+  <section id="writing">
+    <h2>Blog</h2>
     <ul>
       {latestPosts.map((post) => (
         <li><a href={`${base}blog/${post.slug}/`}>{post.data.title}</a></li>
       ))}
     </ul>
-  </section>
 
-  <section>
     <h2>Guides</h2>
     <ul>
-      {guideSeries.map((guide) => (
-        <li><a href={`${base}guides/`}>{guide}</a></li>
+      {guidePages.map((page) => (
+        <li><a href={`${base}guides/${page.slug}/`}>{page.data.guide}: {page.data.title}</a></li>
       ))}
     </ul>
   </section>
