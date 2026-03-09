@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const base = import.meta.env.BASE_URL;
+
+const projects = await getCollection('portfolio', ({ data }) => !data.draft);
+---
+
+<BaseLayout title="Portfolio" description="Project case studies">
+  <h1>Portfolio</h1>
+  <ul>
+    {projects.map((project) => (
+      <li>
+        <a href={`${base}portfolio/${project.slug}/`}>{project.data.title}</a>
+        <p class="meta">{project.data.description}</p>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

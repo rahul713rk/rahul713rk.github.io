@@ -1,0 +1,26 @@
+---
+import { getCollection, render } from 'astro:content';
+import GuideLayout from '../../layouts/GuideLayout.astro';
+import { getReadingTime } from '../../utils/readingTime';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('guides', ({ data }) => !data.draft);
+  return pages.map((page) => ({ params: { slug: page.slug }, props: { page } }));
+}
+
+const { page } = Astro.props;
+const { Content, headings } = await render(page);
+const readingTime = getReadingTime(page.body);
+---
+
+<GuideLayout
+  title={page.data.title}
+  description={page.data.description}
+  guide={page.data.guide}
+  order={page.data.order}
+  tags={page.data.tags}
+  readingTime={readingTime}
+  headings={headings}
+>
+  <Content />
+</GuideLayout>

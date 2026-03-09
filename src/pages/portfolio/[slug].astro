@@ -1,0 +1,24 @@
+---
+import { getCollection, render } from 'astro:content';
+import PortfolioLayout from '../../layouts/PortfolioLayout.astro';
+import { getReadingTime } from '../../utils/readingTime';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('portfolio', ({ data }) => !data.draft);
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const readingTime = getReadingTime(project.body);
+---
+
+<PortfolioLayout
+  title={project.data.title}
+  description={project.data.description}
+  stack={project.data.stack}
+  tags={project.data.tags}
+  readingTime={readingTime}
+>
+  <Content />
+</PortfolioLayout>

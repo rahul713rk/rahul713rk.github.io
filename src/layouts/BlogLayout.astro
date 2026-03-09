@@ -1,0 +1,50 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  date?: Date;
+  tags?: string[];
+  readingTime?: number;
+  headings?: Heading[];
+}
+
+const { title, description, date, tags = [], readingTime, headings = [] } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="content-grid">
+    <div>
+      <p class="eyebrow">Blog Post</p>
+      <h1>{title}</h1>
+      <p class="meta">
+        {date && <time datetime={date.toISOString()}>{date.toLocaleDateString()}</time>}
+        {readingTime && <span>{readingTime} min read</span>}
+      </p>
+      <p class="tags">
+        {tags.map((tag) => <a href={`/tags/${tag.toLowerCase()}/`}>#{tag}</a>)}
+      </p>
+      <slot />
+    </div>
+
+    {headings.length > 1 && (
+      <aside class="toc">
+        <h2>Contents</h2>
+        <ul>
+          {headings
+            .filter((item) => item.depth <= 3)
+            .map((item) => (
+              <li><a href={`#${item.slug}`}>{item.text}</a></li>
+            ))}
+        </ul>
+      </aside>
+    )}
+  </article>
+</BaseLayout>

@@ -1,0 +1,26 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  stack?: string[];
+  tags?: string[];
+  readingTime?: number;
+}
+
+const { title, description, stack = [], tags = [], readingTime } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <article>
+    <p class="eyebrow">Portfolio Project</p>
+    <h1>{title}</h1>
+    <p class="meta">{readingTime && <span>{readingTime} min read</span>}</p>
+    <p class="meta">Stack: {stack.join(', ')}</p>
+    <p class="tags">
+      {tags.map((tag) => <a href={`/tags/${tag.toLowerCase()}/`}>#{tag}</a>)}
+    </p>
+    <slot />
+  </article>
+</BaseLayout>

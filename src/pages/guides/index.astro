@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const base = import.meta.env.BASE_URL;
+
+const pages = await getCollection('guides', ({ data }) => !data.draft);
+const grouped = Object.values(
+  pages.reduce((acc, page) => {
+    const key = page.data.guide;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(page);
+    return acc;
+  }, {})
+).map((group) => group.sort((a, b) => a.data.order - b.data.order));
+---
+
+<BaseLayout title="Guides" description="Step-by-step guides">
+  <h1>Guides</h1>
+  {grouped.map((pagesInGuide) => (
+    <section>
+      <h2>{pagesInGuide[0].data.guide}</h2>
+      <ol>
+        {pagesInGuide.map((page) => (
+          <li><a href={`${base}guides/${page.slug}/`}>{page.data.title}</a></li>
+        ))}
+      </ol>
+    </section>
+  ))}
+</BaseLayout>

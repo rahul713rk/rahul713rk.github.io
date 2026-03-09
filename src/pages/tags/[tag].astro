@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const [posts, projects, guides] = await Promise.all([
+    getCollection('blog', ({ data }) => !data.draft),
+    getCollection('portfolio', ({ data }) => !data.draft),
+    getCollection('guides', ({ data }) => !data.draft)
+  ]);
+
+  const entries = [
+    ...posts.map((item) => ({ type: 'blog', slug: item.slug, title: item.data.title, tags: item.data.tags })),
+    ...projects.map((item) => ({ type: 'portfolio', slug: item.slug, title: item.data.title, tags: item.data.tags })),
+    ...guides.map((item) => ({ type: 'guides', slug: item.slug, title: item.data.title, tags: item.data.tags }))
+  ];
+
+  const tags = [...new Set(entries.flatMap((entry) => entry.tags.map((tag) => tag.toLowerCase())))];
+
+  return tags.map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      matches: entries.filter((entry) => entry.tags.map((t) => t.toLowerCase()).includes(tag))
+    }
+  }));
+}
+
+const base = import.meta.env.BASE_URL;
+const { tag, matches } = Astro.props;
+---
+
+<BaseLayout title={`Tag: ${tag}`} description={`Content tagged ${tag}`}>
+  <h1>Tag: #{tag}</h1>
+  <ul>
+    {matches.map((entry) => (
+      <li>
+        <a href={`${base}${entry.type}/${entry.slug}/`}>{entry.title}</a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

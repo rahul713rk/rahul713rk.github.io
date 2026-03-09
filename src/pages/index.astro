@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const base = import.meta.env.BASE_URL;
+
+const [posts, projects, guides] = await Promise.all([
+  getCollection('blog', ({ data }) => !data.draft),
+  getCollection('portfolio', ({ data }) => !data.draft),
+  getCollection('guides', ({ data }) => !data.draft)
+]);
+
+const latestPosts = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()).slice(0, 3);
+const featuredProjects = projects.filter((p) => p.data.featured).slice(0, 3);
+const guideSeries = [...new Set(guides.map((g) => g.data.guide))];
+---
+
+<BaseLayout title="Portfolio" description="Developer portfolio and writing">
+  <section>
+    <h1>Hi, I build fast and maintainable web products.</h1>
+    <p>This site is built with Astro + Markdown collections.</p>
+  </section>
+
+  <section>
+    <h2>Featured Projects</h2>
+    <ul>
+      {featuredProjects.map((project) => (
+        <li><a href={`${base}portfolio/${project.slug}/`}>{project.data.title}</a></li>
+      ))}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Latest Blog Posts</h2>
+    <ul>
+      {latestPosts.map((post) => (
+        <li><a href={`${base}blog/${post.slug}/`}>{post.data.title}</a></li>
+      ))}
+    </ul>
+  </section>
+
+  <section>
+    <h2>Guides</h2>
+    <ul>
+      {guideSeries.map((guide) => (
+        <li><a href={`${base}guides/`}>{guide}</a></li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
