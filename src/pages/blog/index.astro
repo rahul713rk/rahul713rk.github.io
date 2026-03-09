@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { slugify } from '../../utils/slugify';
 
 const base = import.meta.env.BASE_URL;
 
@@ -16,12 +17,12 @@ const tags = [...new Set(posts.flatMap((post) => post.data.tags))].sort((a, b) =
   <div class="chips">
     <button class="chip active" type="button" data-filter="all">All</button>
     {tags.map((tag) => (
-      <button class="chip" type="button" data-filter={tag.toLowerCase()}>{tag}</button>
+      <button class="chip" type="button" data-filter={slugify(tag)}>{tag}</button>
     ))}
   </div>
   <div class="list" id="blog-list">
     {posts.map((post) => (
-      <article class="card filter-item" data-tags={post.data.tags.map((tag) => tag.toLowerCase()).join(',')} data-search={`${post.data.title} ${post.data.description || ''} ${post.data.tags.join(' ')}`}>
+      <article class="card filter-item" data-tags={post.data.tags.map((tag) => slugify(tag)).join(',')} data-search={`${post.data.title} ${post.data.description || ''} ${post.data.tags.join(' ')}`}>
         <h2><a href={`${base}blog/${post.slug}/`}>{post.data.title}</a></h2>
         <p>{post.data.description}</p>
         <p class="meta">{post.data.date.toLocaleDateString()}</p>

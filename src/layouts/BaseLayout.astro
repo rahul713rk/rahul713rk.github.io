@@ -31,7 +31,6 @@ const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     {ogImage && <meta name="twitter:image" content={ogImage} />}
-    <link rel="alternate" type="application/rss+xml" title="Portfolio RSS" href={`${base}rss.xml`} />
   </head>
   <body>
     <header class="site-header">
@@ -41,7 +40,6 @@ const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
         <a href={`${base}#writing`}>Blog + Guides</a>
         <a href={`${base}about/`}>About</a>
         <a href={`${base}skills/`}>Skills</a>
-        <a href={`${base}rss.xml`}>RSS</a>
         <label class="theme-switch" for="theme-select">Mode</label>
         <select id="theme-select" aria-label="Choose theme mode">
           <option value="light">Light</option>

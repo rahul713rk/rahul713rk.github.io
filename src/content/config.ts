@@ -2,7 +2,7 @@ import { defineCollection, z } from 'astro:content';
 
 const commonSchema = z.object({
   title: z.string(),
-  description: z.string().optional(),
+  description: z.string().default(''),
   date: z.coerce.date().optional(),
   tags: z.array(z.string()).default([]),
   draft: z.boolean().default(false)
@@ -10,7 +10,9 @@ const commonSchema = z.object({
 
 const blog = defineCollection({
   schema: commonSchema.extend({
-    date: z.coerce.date()
+    description: z.string().min(1),
+    date: z.coerce.date(),
+    tags: z.array(z.string()).min(1)
   })
 });
 
@@ -23,6 +25,9 @@ const portfolio = defineCollection({
 
 const guides = defineCollection({
   schema: commonSchema.extend({
+    description: z.string().min(1),
+    date: z.coerce.date(),
+    tags: z.array(z.string()).min(1),
     guide: z.string(),
     order: z.number().int().positive()
   })

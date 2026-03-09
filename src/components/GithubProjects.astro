@@ -1,0 +1,50 @@
+---
+interface Repo {
+  name: string;
+  html_url: string;
+  description: string | null;
+  stargazers_count: number;
+  language: string | null;
+  fork: boolean;
+}
+
+const username = 'rahul713rk';
+let projects: Repo[] = [];
+
+try {
+  const res = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'astro-portfolio'
+    }
+  });
+
+  if (res.ok) {
+    const repos = (await res.json()) as Repo[];
+    projects = repos
+      .filter((repo) => !repo.fork)
+      .sort((a, b) => b.stargazers_count - a.stargazers_count)
+      .slice(0, 6);
+  }
+} catch {
+  projects = [];
+}
+---
+
+<section id="github-projects" class="panel">
+  <h2>GitHub Projects</h2>
+  {projects.length === 0 ? (
+    <p class="meta">GitHub data is unavailable right now. Showing portfolio projects above.</p>
+  ) : (
+    <div class="card-grid">
+      {projects.map((repo) => (
+        <article class="card">
+          <p class="eyebrow">Open Source</p>
+          <h3><a href={repo.html_url} target="_blank" rel="noreferrer">{repo.name}</a></h3>
+          <p>{repo.description || 'No description provided yet.'}</p>
+          <p class="meta">⭐ {repo.stargazers_count}{repo.language ? ` • ${repo.language}` : ''}</p>
+        </article>
+      ))}
+    </div>
+  )}
+</section>

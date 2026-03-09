@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
+import { slugify } from '../../utils/slugify';
 
 const base = import.meta.env.BASE_URL;
 
@@ -14,12 +15,12 @@ const tags = [...new Set(projects.flatMap((project) => project.data.tags))].sort
   <div class="chips">
     <button class="chip active" type="button" data-filter="all">All</button>
     {tags.map((tag) => (
-      <button class="chip" type="button" data-filter={tag.toLowerCase()}>{tag}</button>
+      <button class="chip" type="button" data-filter={slugify(tag)}>{tag}</button>
     ))}
   </div>
   <div class="list">
     {projects.map((project) => (
-      <article class="card filter-item" data-tags={project.data.tags.map((tag) => tag.toLowerCase()).join(',')} data-search={`${project.data.title} ${project.data.description || ''} ${project.data.tags.join(' ')} ${project.data.stack.join(' ')}`}>
+      <article class="card filter-item" data-tags={project.data.tags.map((tag) => slugify(tag)).join(',')} data-search={`${project.data.title} ${project.data.description || ''} ${project.data.tags.join(' ')} ${project.data.stack.join(' ')}`}>
         <h2><a href={`${base}portfolio/${project.slug}/`}>{project.data.title}</a></h2>
         <p>{project.data.description}</p>
         <p class="meta">Stack: {project.data.stack.join(', ')}</p>
